@@ -34,7 +34,7 @@ class MomentumStrategy(Strategy):
         # print(self.data['Signal'])
 
 
-aapl_momentum = MomentumStrategy("AAPL", '2010-01-01', '2020-01-01')
-aapl_momentum.download_data("AAPL", '2010-01-01', '2020-01-01')
-aapl_momentum.calculate_indicators()
-aapl_momentum.generate_signals()
+# aapl_momentum = MomentumStrategy("AAPL", '2010-01-01', '2020-01-01')
+# aapl_momentum.download_data("AAPL", '2010-01-01', '2020-01-01')
+# aapl_momentum.calculate_indicators()
+# aapl_momentum.generate_signals()
