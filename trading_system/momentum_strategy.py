@@ -3,6 +3,8 @@ import yfinance as yf
 from ta.momentum import RSIIndicator
 from ta.trend import SMAIndicator
 from trading_system.strategy import Strategy
+from requests.exceptions import RequestException
+import streamlit as st
 
 class MomentumStrategy(Strategy):
 
@@ -13,11 +15,11 @@ class MomentumStrategy(Strategy):
         try:
             self.data = yf.download(ticker, start=start_date, end=end_date)
             print("Data downloaded successfully.")
-        except Timeout:
-            print("Network timeout. Please try again later.")
+        except RequestException as e:
+            st.write(f"Network-related error: {e}")
             self.data = None
         except Exception as e:
-            print(f"An error occurred: {e}")
+            st.write(f"An error occurred: {e}")
             self.data = None
         print("working")
         # print(self.data)
