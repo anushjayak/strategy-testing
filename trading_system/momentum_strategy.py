@@ -10,7 +10,15 @@ class MomentumStrategy(Strategy):
         # ticker = 'AAPL'  # Example ticker
         # start_date = '2010-01-01'
         # end_date = '2020-01-01'
-        self.data = yf.download(ticker, start=start_date, end=end_date)
+        try:
+            self.data = yf.download(ticker, start=start_date, end=end_date)
+            print("Data downloaded successfully.")
+        except Timeout:
+            print("Network timeout. Please try again later.")
+            self.data = None
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            self.data = None
         print("working")
         # print(self.data)
 
