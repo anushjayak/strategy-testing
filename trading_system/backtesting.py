@@ -18,5 +18,8 @@ class Backtesting:
     def plot_results(self):
         pass
 
+    def scoring(self):
+        pass
+
 
 

@@ -2,6 +2,7 @@ from trading_system.backtesting import Backtesting
 from trading_system.momentum_strategy import MomentumStrategy
 import matplotlib.pyplot as plt
 import streamlit as st
+import pandas as pd
 
 class MomentumBacktesting(Backtesting):
     def __init__(self, strategy, initial_capital):
@@ -72,6 +73,73 @@ class MomentumBacktesting(Backtesting):
         # st.pyplot(plt)
     def plot_results(self):
         pass
+
+    def scoring(self):
+
+        def get_next_available_date(data, end_date):
+            while end_date not in data.index:
+                end_date += pd.Timedelta(days=1)  # Increment the end_date until a valid trading day is found
+            return end_date
+
+        data = self.strategy.generate_signals()
+        results = []
+        time_frames = [7, 30, 90]
+
+
+        for i, row in data.iterrows():
+            if row['Signal'] != 0:  # Signal exists
+                signal_date = i
+                signal_price = row['Close']
+                signal_type = 'Buy' if row['Signal'] == 1 else 'Sell'
+
+                for days in time_frames:
+                    # Calculate the date range to look ahead
+                    end_date = signal_date + pd.Timedelta(days=days)
+
+                    if end_date not in data.index:
+                        end_date = get_next_available_date(data, end_date)
+
+                    if end_date in data.index:
+                        # Calculate the price change over the time frame
+                        future_price = data.loc[end_date, 'Close']
+                        price_change = future_price - signal_price
+                        mean_price = data.loc[signal_date:end_date, 'Close'].mean()
+                        std_dev = data.loc[signal_date:end_date, 'Close'].std()
+
+                        # Calculate the number of standard deviations the price moved
+                        if std_dev != 0:
+                            std_devs_moved = (future_price - mean_price) / std_dev
+                        else:
+                            std_devs_moved = 0
+
+                        # Scoring based on the type of signal
+                        if signal_type == 'Buy':
+                            if std_devs_moved <= 0:
+                                score = 0
+                            elif std_devs_moved >=2:
+                                score = 10
+                            else:
+                                score = (std_devs_moved/2) * 10
+                        else:  # Sell
+                            if std_devs_moved >= 0:
+                                score = 0
+                            elif std_devs_moved <= -2:
+                                score = 10
+                            else:
+                                score = (-std_devs_moved / 2) * 10
+
+                        # Append results
+                        results.append({
+                            'Signal Date': signal_date,
+                            'Signal Type': signal_type,
+                            'Time Frame': days,
+                            'Future Price': future_price,
+                            'Price Change': price_change,
+                            'Std Devs Moved': std_devs_moved,
+                            'Score': score
+                        })
+
+        return pd.DataFrame(results)
 
 # strategy = MomentumStrategy("AAPL", '2010-01-01', '2020-01-01')
 # strategy.download_data("AAPL", '2010-01-01', '2020-01-01')

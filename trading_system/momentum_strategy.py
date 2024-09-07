@@ -33,12 +33,23 @@ class MomentumStrategy(Strategy):
         print("working")
 
     def generate_signals(self):
-        self.data['Signal'] = 0  # Default to no signal
-        self.data['Signal'] = np.where((self.data['50_SMA'] > self.data['200_SMA']) & (self.data['RSI'] > 50) & (self.data['RSI'] < 70), 1,
-                                  self.data['Signal'])
-        self.data['Signal'] = np.where((self.data['50_SMA'] < self.data['200_SMA']) & (self.data['RSI'] < 50) & (self.data['RSI'] > 30), -1,
-                                  self.data['Signal'])
-        self.data['Signal'] = self.data['Signal'].replace(to_replace=0, method='ffill')
+        # Default to no signal
+        self.data['Signal'] = 0
+
+        # Calculate the conditions for crossovers
+        condition1 = (self.data['50_SMA'].shift(1) <= self.data['200_SMA'].shift(1)) & (
+                self.data['50_SMA'] > self.data['200_SMA'])  # Cross up
+        condition2 = (self.data['50_SMA'].shift(1) >= self.data['200_SMA'].shift(1)) & (
+                self.data['50_SMA'] < self.data['200_SMA'])  # Cross down
+
+        # Generate Buy Signal on upward crossover and additional RSI condition
+        self.data['Signal'] = np.where(condition1 & (self.data['RSI'] > 50) & (self.data['RSI'] < 70), 1,
+                                       self.data['Signal'])
+
+        # Generate Sell Signal on downward crossover and additional RSI condition
+        self.data['Signal'] = np.where(condition2 & (self.data['RSI'] < 50) & (self.data['RSI'] > 30), -1,
+                                       self.data['Signal'])
+
         print("working")
         return self.data
         # print(self.data['Signal'])
